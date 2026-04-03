@@ -1,70 +1,34 @@
-# Getting Started with Create React App
+🐛 Glowworm Music Studio
+An Interactive Web-Based Digital Audio Workstation (DAW)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+🌟 Project Overview
+Glowworm is a progressive web application designed to bring high-quality music creation to the browser. This project focuses on a seamless UX "Core Loop", allowing users to select professional instruments and perform using their standard computer keyboard.
 
-## Available Scripts
+🎹 Current Features
+Professional Sampler Engine: Uses Tone.js and high-fidelity Salamander Grand Piano audio samples for an authentic sound.
 
-In the project directory, you can run:
+Piano-Style Keyboard Mapping: An intuitive "Left-to-Right" layout where the left hand handles bass (C2-C4) and the right hand handles melody (D4-D6).
 
-### `npm start`
+Dynamic Music Studio: A dedicated performance space featuring a Forest Green aesthetic designed for visual comfort and focus.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Visual Feedback: Real-time display showing the musical note and octave associated with every keypress.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+🛠️ How to Use the Studio
+Select an Instrument: Choose from the instrument menu (currently optimized for Grand Piano).
 
-### `npm test`
+Play: Use your keyboard to trigger notes:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Left Hand (Q to B): Low-range octaves.
 
-### `npm run build`
+Right Hand (Y to /): High-range octaves.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Visual Reference: The on-screen keys will show you exactly which note you are playing (e.g., C4).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+👥 Team Glowworm
+Gregory Treinen: Lead Backend & Database Developer.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Allan Hernandez: Project Team Member.
 
-### `npm run eject`
+Hennysa Omoregie: Project Team Member.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Laurelle Sekpe: Project Team Member.
