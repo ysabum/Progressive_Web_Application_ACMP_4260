@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Home from './pages/Home';
 import InstrumentSelect from './pages/InstrumentSelect';
 import Studio from './pages/Studio';
+import Overlay from './pages/Overlay';
+
 
 function App() {
   const [view, setView] = useState('home'); 
@@ -20,6 +22,9 @@ function App() {
     setView('studio');
   };
 
+  const goToOverlay = () => setView('overlay');
+
+
   return (
     <div className="App">
       {/* Navigation Bar */}
@@ -34,17 +39,17 @@ function App() {
           >
             Studio {instrument && `(${instrument})`}
           </span>
+          <span style={view === 'overlay' ? activeLink : link} onClick={goToOverlay}>Overlay</span>
         </div>
       </nav>
 
       {/* View Switcher */}
       {view === 'home' && <Home onStart={startApp} />}
-      
       {view === 'select' && (
         <InstrumentSelect onSelect={selectInstrument} onBack={goBack} />
       )}
-
       {view === 'studio' && <Studio instrumentName={instrument} onBack={startApp} />}
+      {view === 'overlay' && <Overlay onBack={goBack} />}
     </div>
   );
 }
