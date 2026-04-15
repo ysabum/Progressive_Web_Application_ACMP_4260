@@ -2,10 +2,10 @@ import React from 'react';
 
 const InstrumentSelect = ({ onSelect, onBack }) => {
   const instruments = [
-    { name: 'Acoustic Guitar', icon: '🎸' },
-    { name: 'Grand Piano', icon: '🎹' },
-    { name: 'Solo Violin', icon: '🎻' },
-    { name: 'Brass Trumpet', icon: '🎺' }
+    { name: 'Guitar', icon: '🎸' },
+    { name: 'Piano', icon: '🎹' },
+    { name: 'Violin', icon: '🎻' },
+    { name: 'Trumpet', icon: '🎺' }
   ];
 
   return (
