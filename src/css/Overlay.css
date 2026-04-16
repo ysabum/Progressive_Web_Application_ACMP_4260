@@ -1,0 +1,197 @@
+/* CSS for pages/Overlay.js */
+
+/* Page Background */
+.overlay {
+  background-color: #F7FAFC;
+  min-height: 100vh;
+}
+
+/* Hero Section (Overlay, flavor text) */
+.overlay .hero {
+  padding-left: 80px;
+  padding-right: 80px;
+  padding-top: 75px;
+  background: linear-gradient(to right, #181F39, #232f52);
+  color: white;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Layout container */
+.overlay .hero-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; 
+}
+
+/* Left text */
+.overlay .hero-text {
+  max-width: 500px;
+}
+
+/* Right image container */
+.overlay .hero-image-container {
+  position: relative;
+  width: 300px;
+  height: 220px;
+  overflow: hidden; /* enables cut-off */
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+/* Image styling */
+.overlay .hero-image {
+  width: 280px;
+  height: auto;
+  transform: translateY(60px); 
+}
+
+/* Full-width White Card (Add Audio File section) */
+.overlay .card {
+  background: white;
+  width: 100%;
+  padding: 50px 40px;
+  box-sizing: border-box;
+  border-radius: 0;
+}
+
+/* Upload Button */
+.overlay .upload-button {
+  display: block;
+  background: #9e222c;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 0 auto 20px auto;
+  text-align: center;
+}
+
+/* Track List */
+.overlay .track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.overlay .track-item {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: grab;
+  justify-content: space-between;
+  border: 1px solid #ddd;
+}
+
+.overlay .remove-button {
+  color: red;
+  font-weight: bold;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.overlay .edit-button {
+  background: #4cc9f0;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Edit Panel */
+.overlay .edit-panel {
+  background: linear-gradient(to right, #181F39, #232f52);
+  border: 1px solid #4cc9f0;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 8px;
+  display: grid;
+  gap: 10px;
+}
+
+.overlay .edit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: white;
+}
+
+/* Slider Row */
+.overlay .slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 260px;
+}
+
+.overlay .slider {
+  width: 200px;
+}
+
+.overlay .slider-value {
+  color: white;
+}
+
+/* Controls */
+.overlay .controls {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.overlay .play-button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  background: #232f52;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.overlay .stop-button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  background: #999;
+  border: none;
+  cursor: pointer;
+}
+
+.overlay .stop-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.overlay .download-button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  background: #59D48C;
+  border: none;
+  cursor: pointer;
+  color: #181F39;
+}
+
+/* Back Button */
+.overlay .back-container {
+  background-color: #F7FAFC;
+  padding: 20px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.overlay .back-button {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px 20px;
+  cursor: pointer; 
+  background: white;
+  border: 1px solid #cbd5e0;
+  border-radius: 5px
+}

@@ -1,0 +1,67 @@
+/* CSS for pages/Overlay.js */
+
+/* Full-page layout */
+.home {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Centered hero content */
+.home .hero-content {
+  text-align: center;
+  max-width: 600px;
+  padding: 20px;
+}
+
+/* Title */
+.home .title {
+  font-size: 4rem;
+  margin: 0;
+  color: #4cc9f0;
+}
+
+/* Subtitle */
+.home .subtitle {
+  font-size: 1.5rem;
+  font-weight: 300;
+  margin-bottom: 20px;
+}
+
+/* Description text */
+.home .description {
+  line-height: 1.6;
+  margin-bottom: 40px;
+  color: #cbd5e0;
+}
+
+/* Primary button */
+.home .primary-btn {
+  padding: 15px 40px;
+  font-size: 1.2rem;
+  background-color: #59D48C;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.home .primary-btn:hover {
+  background-color: #3bb8e0;
+  transform: translateY(-2px);
+}
+
+/* Footer */
+.home .footer {
+  position: absolute;
+  bottom: 20px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}

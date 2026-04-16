@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import * as Tone from 'tone';
+import { Mp3Encoder } from '@breezystack/lamejs'; // MP3 encoder
+import "../css/Overlay.css"; // css
+import overlayImg from "../images/overlay.png";
 
 export default function Overlay({ onBack }) {
   const [tracks, setTracks] = useState([]);
   const [players, setPlayers] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [openPanel, setOpenPanel] = useState(null); // which track is being edited
+  const [openPanel, setOpenPanel] = useState(null);
+  const [progress, setProgress] = useState(""); // Progress indicator
+
 
   /* Track Model */
   const handleUpload = (e) => {
@@ -15,10 +20,10 @@ export default function Overlay({ onBack }) {
       id: crypto.randomUUID(),
       file,
       url: URL.createObjectURL(file),
-      volume: 0,        // dB
-      startTime: 0,     // seconds
-      trimStart: 0,     // seconds
-      trimEnd: "",      // empty = full length
+      volume: 0,
+      startTime: 0,
+      trimStart: 0,
+      trimEnd: "",
     }));
 
     setTracks((prev) => [...prev, ...newTracks]);
@@ -34,7 +39,8 @@ export default function Overlay({ onBack }) {
     setTracks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  /* Drag and Drop */
+
+  /* Song Drag and Drop */
   const onDragStart = (e, id) => {
     e.dataTransfer.setData("trackId", id);
   };
@@ -46,7 +52,6 @@ export default function Overlay({ onBack }) {
     const reordered = [...tracks];
     const draggedIndex = reordered.findIndex((t) => t.id === draggedId);
     const targetIndex = reordered.findIndex((t) => t.id === targetId);
-
     const [draggedItem] = reordered.splice(draggedIndex, 1);
     reordered.splice(targetIndex, 0, draggedItem);
 
@@ -103,102 +108,168 @@ export default function Overlay({ onBack }) {
   }, [players]);
 
 
+  /* Decode audio file using FileReader */
+  async function decodeFile(file, audioCtx) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const arrayBuffer = reader.result;
+        audioCtx.decodeAudioData(
+          arrayBuffer,
+          decoded => resolve(decoded),
+          err => reject("decodeAudioData failed: " + err)
+        );
+      };
+
+      reader.onerror = () => reject("FileReader failed");
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+
   /* Download Mix */
-  const downloadMix = async () => {
-    const maxEnd = tracks.reduce((acc, t) => {
-      const duration =
+  const downloadMix = async (format = "wav") => {
+    if (tracks.length === 0) return;
+
+    setProgress("Decoding audio...");
+
+    /* Create decoding context */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Step 1: Decode all files SEQUENTIALLY
+    const decoded = [];
+    for (let i = 0; i < tracks.length; i++) {
+      setProgress(`Decoding track ${i + 1}/${tracks.length}...`);
+      const buffer = await decodeFile(tracks[i].file, audioCtx);
+      decoded.push(buffer);
+    }
+
+    audioCtx.close(); // Close decoding context to free memory
+
+    // Step 2: Compute total duration
+    let maxEnd = 0;
+
+    tracks.forEach((t, i) => {
+      const fullDur = decoded[i].duration;
+      const effective =
         t.trimEnd !== "" && t.trimEnd > t.trimStart
           ? t.trimEnd - t.trimStart
-          : 10;
-      return Math.max(acc, t.startTime + duration);
-    }, 0);
+          : Math.max(0, fullDur - t.trimStart);
 
-    const buffer = await Tone.Offline(async () => {
-      tracks.forEach((t) => {
-        const p = new Tone.Player(t.url).toDestination();
-        p.volume.value = t.volume;
+      maxEnd = Math.max(maxEnd, t.startTime + effective);
+    });
 
-        const duration =
-          t.trimEnd !== "" && t.trimEnd > t.trimStart
-            ? t.trimEnd - t.trimStart
-            : undefined;
+    /* Prevent huge renders */
+    if (maxEnd > 300) {
+      alert("Mix too long. Please keep under 5 minutes.");
+      return;
+    }
 
-        p.start(t.startTime, t.trimStart, duration);
-      });
-    }, maxEnd);
+    if (maxEnd <= 0) maxEnd = 1;
 
-    const wav = audioBufferToWav(buffer);
-    const blob = new Blob([wav], { type: "audio/wav" });
+    // Step 3: Create OfflineAudioContext
+    const sampleRate = 44100;
+    const offline = new OfflineAudioContext(
+      2,
+      Math.ceil(maxEnd * sampleRate),
+      sampleRate
+    );
+
+    // Step 4: Schedule each track
+    tracks.forEach((t, i) => {
+      const src = offline.createBufferSource();
+      src.buffer = decoded[i];
+
+      const gain = offline.createGain();
+      gain.gain.value = Math.pow(10, t.volume / 20);
+
+      src.connect(gain).connect(offline.destination);
+
+      const fullDur = decoded[i].duration;
+      const effective =
+        t.trimEnd !== "" && t.trimEnd > t.trimStart
+          ? t.trimEnd - t.trimStart
+          : Math.max(0, fullDur - t.trimStart);
+
+      src.start(t.startTime, t.trimStart, effective);
+    });
+
+    /* Yield to UI before heavy rendering */
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    setProgress("Rendering mix...");
+
+    // Step 5: Render
+    const rendered = await offline.startRendering();
+
+    setProgress("Encoding...");
+
+    // Step 6: Export
+    const blob = encodeMp3(rendered);
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement("a");
+
     a.href = url;
-    a.download = "mix.wav";
+    a.download = "mix.mp3";
     a.click();
+
+    setProgress("Done!");
   };
 
-  /* WAV Encoder */
-  function audioBufferToWav(buffer) {
-    const numOfChan = buffer.numberOfChannels;
-    const length = buffer.length * numOfChan * 2 + 44;
-    const bufferArray = new ArrayBuffer(length);
-    const view = new DataView(bufferArray);
+  /* MP3 Encoder */
+  function encodeMp3(buffer) {
+    const samples = buffer.getChannelData(0);
 
-    let offset = 0;
-
-    function writeString(s) {
-      for (let i = 0; i < s.length; i++) {
-        view.setUint8(offset++, s.charCodeAt(i));
-      }
+    // Convert Float32 to Int16 (required for lamejs)
+    const samples16 = new Int16Array(samples.length);
+    for (let i = 0; i < samples.length; i++) {
+      samples16[i] = Math.max(-1, Math.min(1, samples[i])) * 32767;
     }
 
-    writeString("RIFF");
-    view.setUint32(offset, 36 + buffer.length * numOfChan * 2, true);
-    offset += 4;
-    writeString("WAVE");
-    writeString("fmt ");
-    view.setUint32(offset, 16, true);
-    offset += 4;
-    view.setUint16(offset, 1, true);
-    offset += 2;
-    view.setUint16(offset, numOfChan, true);
-    offset += 2;
-    view.setUint32(offset, buffer.sampleRate, true);
-    offset += 4;
-    view.setUint32(offset, buffer.sampleRate * numOfChan * 2, true);
-    offset += 4;
-    view.setUint16(offset, numOfChan * 2, true);
-    offset += 2;
-    view.setUint16(offset, 16, true);
-    offset += 2;
-    writeString("data");
-    view.setUint32(offset, buffer.length * numOfChan * 2, true);
-    offset += 4;
+    const mp3encoder = new Mp3Encoder(1, buffer.sampleRate, 128);
+    const blockSize = 1152;
 
-    for (let i = 0; i < buffer.length; i++) {
-      for (let ch = 0; ch < numOfChan; ch++) {
-        let sample = buffer.getChannelData(ch)[i];
-        sample = Math.max(-1, Math.min(1, sample));
-        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
-        offset += 2;
-      }
+    let mp3Data = [];
+
+    for (let i = 0; i < samples16.length; i += blockSize) {
+      const chunk = samples16.subarray(i, i + blockSize);
+      const mp3buf = mp3encoder.encodeBuffer(chunk);
+      if (mp3buf.length > 0) mp3Data.push(mp3buf);
     }
 
-    return bufferArray;
+    const end = mp3encoder.flush();
+    if (end.length > 0) mp3Data.push(end);
+
+    return new Blob(mp3Data, { type: "audio/mp3" });
   }
+
 
   /* UI */
   return (
-    <div style={{ backgroundColor: "#181F39", minHeight: "100vh" }}>
-      <div style={heroStyle}>
-        <h1 style={heroTitle}>Overlay</h1>
-        <p style={heroSubtitle}>
-          Upload multiple audio files created in Studio and play them together to create layered mixes.
-        </p>
+    <div className="overlay">
+      <div className="hero">
+        <div className="hero-content">
+          <div className="hero-text">
+            <h1 className="hero-title">Overlay</h1>
+            <p className="hero-subtitle">
+              Upload multiple audio files created in Studio and play 
+              them together to create layered mixes.
+            </p>
+          </div>
+
+          <div className="hero-image-container">
+            <img
+              src={overlayImg}
+              alt="Overlay visual"
+              className="hero-image"
+            />
+          </div>
+        </div>
       </div>
 
-      <div style={cardStyle}>
-        <label style={uploadButton}>
+      <div className="card">
+        <label className="upload-button">
           📄 Add Audio Files
           <input
             type="file"
@@ -209,7 +280,10 @@ export default function Overlay({ onBack }) {
           />
         </label>
 
-        <div style={trackListStyle}>
+        {/* Progress Display */}
+        {progress && <div className="progress">{progress}</div>}
+
+        <div className="track-list">
           {tracks.map((t) => (
             <div key={t.id}>
               <div
@@ -217,13 +291,13 @@ export default function Overlay({ onBack }) {
                 onDragStart={(e) => onDragStart(e, t.id)}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => onDrop(e, t.id)}
-                style={trackItemStyle}
+                className="track-item"
               >
-                <span style={removeButton} onClick={() => removeTrack(t.id)}>✖</span>
+                <span className="remove-button" onClick={() => removeTrack(t.id)}>✖</span>
                 <span>{t.file.name}</span>
 
                 <button
-                  style={editButton}
+                  className="edit-button"
                   onClick={() => setOpenPanel(openPanel === t.id ? null : t.id)}
                 >
                   Edit
@@ -231,82 +305,118 @@ export default function Overlay({ onBack }) {
               </div>
 
               {openPanel === t.id && (
-                <div style={editPanel}>
-                  <label style={editRow}>
+                <div className="edit-panel">
+
+                  <label className="edit-row">
                     Volume (dB):
-                    <input
-                      type="number"
-                      value={t.volume}
-                      onChange={(e) =>
-                        updateTrack(t.id, { volume: Number(e.target.value) })
-                      }
-                      style={editInput}
-                    />
+                    <div className="slider-row">
+                      <input
+                        type="range"
+                        min="-30"
+                        max="10"
+                        step="1"
+                        value={t.volume}
+                        onChange={(e) =>
+                          updateTrack(t.id, { volume: Number(e.target.value) })
+                        }
+                        className="slider"
+                      />
+                      <span className="slider-value">{t.volume}</span>
+                    </div>
                   </label>
 
-                  <label style={editRow}>
+                  <label className="edit-row">
                     Start Time (s):
-                    <input
-                      type="number"
-                      value={t.startTime}
-                      onChange={(e) =>
-                        updateTrack(t.id, { startTime: Number(e.target.value) })
-                      }
-                      style={editInput}
-                    />
+                    <div className="slider-row">
+                      <input
+                        type="range"
+                        min="0"
+                        max="30"
+                        step="0.1"
+                        value={t.startTime}
+                        onChange={(e) =>
+                          updateTrack(t.id, { startTime: Number(e.target.value) })
+                        }
+                        className="slider"
+                      />
+                      <span className="slider-value">{t.startTime}</span>
+                    </div>
                   </label>
 
-                  <label style={editRow}>
+                  <label className="edit-row">
                     Trim Start (s):
-                    <input
-                      type="number"
-                      value={t.trimStart}
-                      onChange={(e) =>
-                        updateTrack(t.id, { trimStart: Number(e.target.value) })
-                      }
-                      style={editInput}
-                    />
+                    <div className="slider-row">
+                      <input
+                        type="range"
+                        min="0"
+                        max="30"
+                        step="0.1"
+                        value={t.trimStart}
+                        onChange={(e) =>
+                          updateTrack(t.id, { trimStart: Number(e.target.value) })
+                        }
+                        className="slider"
+                      />
+                      <span className="slider-value">{t.trimStart}</span>
+                    </div>
                   </label>
 
-                  <label style={editRow}>
+                  <label className="edit-row">
                     Trim End (s):
-                    <input
-                      type="number"
-                      value={t.trimEnd}
-                      onChange={(e) =>
-                        updateTrack(t.id, {
-                          trimEnd: e.target.value === "" ? "" : Number(e.target.value),
-                        })
-                      }
-                      style={editInput}
-                    />
+                    <div className="slider-row">
+                      <input
+                        type="range"
+                        min="0"
+                        max="30"
+                        step="0.1"
+                        value={t.trimEnd === "" ? 0 : t.trimEnd}
+                        onChange={(e) =>
+                          updateTrack(t.id, {
+                            trimEnd: Number(e.target.value),
+                          })
+                        }
+                        className="slider"
+                      />
+                      <span className="slider-value">
+                        {t.trimEnd === "" ? "full" : t.trimEnd}
+                      </span>
+                    </div>
                   </label>
+
                 </div>
               )}
             </div>
           ))}
         </div>
 
-        <div style={controlsStyle}>
+        <div className="controls">
           <button
-            style={playButton}
+            className="play-button"
             onClick={playAll}
             disabled={tracks.length === 0 || isPlaying}
           >
             ▶ Play All
           </button>
 
-          <button style={stopButton} onClick={stopAll}>
-            ■ Stop
+          <button
+            className="stop-button"
+            onClick={stopAll}
+            disabled={!isPlaying}
+          >
+            ⏹ Stop
           </button>
 
-          <button style={downloadButton} onClick={downloadMix}>
-            ⬇ Download Mix
+          {/* MP3 format download */}
+          <button className="download-button" onClick={() => downloadMix("mp3")}>
+            🡻 Download MP3
           </button>
         </div>
       </div>
-
-      <button onClick={onBack} style={backButton}>← Back to Home</button>
+      
+      {/* Back Button */}
+      <div className="back-container">
+        <button onClick={onBack} className="back-button">← Back to Home</button>
+      </div>
     </div>
   );
 }

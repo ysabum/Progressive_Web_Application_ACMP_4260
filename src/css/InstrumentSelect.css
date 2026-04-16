@@ -1,0 +1,64 @@
+/* CSS for pages/InstrumentSelect.js */
+
+/* Page container */
+.instrument-page {
+  padding: 80px 20px;
+  text-align: center;
+  min-height: 100vh;
+  background: linear-gradient(to right, #f7fafc, #f7fafc);
+}
+
+/* Title */
+.instrument-title {
+  color: #1a1a2e;
+  margin-bottom: 30px;
+  font-size: 2rem;
+}
+
+/* Grid layout */
+.instrument-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 500px;
+  margin: 0 auto 40px auto;
+}
+
+/* Instrument button */
+.instrument-btn {
+  padding: 30px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+  background-color: white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.instrument-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.15);
+}
+
+/* Icon */
+.instrument-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Back button */
+.inst-back-btn {
+  padding: 10px 20px;
+  cursor: pointer;
+  background: none;
+  border: 1px solid #cbd5e0;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: background-color 0.15s ease;
+}
+
+.inst-back-btn:hover {
+  background-color: #e2e8f0;
+}
