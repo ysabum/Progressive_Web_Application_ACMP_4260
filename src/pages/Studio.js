@@ -170,7 +170,7 @@ const Studio = ({ instrumentName, onBack }) => {
         const staveNote = new StaveNote({ clef: "treble", keys: [key], duration: "q" });
         if (n.note.includes('#')) staveNote.addModifier(new Accidental("#"), 0);
 
-        let xOffset = ((n.time - startTimeForThisRow) * 80) + 120;
+        let xOffset = ((n.time - startTimeForThisRow) * 82) + 20;
 
         // FIX: Independent TickContext prevents notes from "piling" on the left
         const noteTickContext = new TickContext();
@@ -225,7 +225,7 @@ const Studio = ({ instrumentName, onBack }) => {
   );
 };
 
-const studioContainer = { paddingTop: '100px', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#1B4D3E', fontFamily: 'Segoe UI, sans-serif' };
+const studioContainer = { paddingTop: '100px', paddingBottom: '50px', minHeight: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#1B4D3E', fontFamily: 'Segoe UI, sans-serif' };
 const studioHeader = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '90%', borderBottom: '2px solid rgba(255,255,255,0.2)', paddingBottom: '15px' };
 const titleStyle = { margin: 0, color: 'white', fontSize: '1.5rem' };
 const controls = { display: 'flex' };
@@ -238,6 +238,6 @@ const keyRow = { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', ga
 const keyStyle = { width: '50px', height: '85px', borderRadius: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', borderBottom: '4px solid #ddd' };
 const keyInfoLabel = { fontSize: '0.6rem', color: '#94a3b8' };
 const noteInfoLabel = { fontWeight: 'bold', color: '#1a1a2e' };
-const studioChangeBtn = { padding: '12px 25px', cursor: 'pointer', backgroundColor: '#4cc9f0', border: 'none', borderRadius: '5px', fontWeight: 'bold' };
+const studioChangeBtn = { marginTop: '20px', padding: '12px 25px', cursor: 'pointer', backgroundColor: '#4cc9f0', border: 'none', borderRadius: '5px', fontWeight: 'bold' };
 
 export default Studio;

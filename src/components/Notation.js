@@ -18,12 +18,12 @@ const Notation = ({ notes }) => {
       
       // Calculate how many lines of music we need based on a set time limit per line
       const secondsPerLine = 12; // Controls how much time fits on one staff row
-      const staveWidth = 1000;
+      const staveWidth = 1100;
       const systemHeight = 150;
       const numSystems = Math.ceil(notes[notes.length - 1].time / secondsPerLine);
 
       // Resize the main container to hold all lines
-      renderer.resize(staveWidth + 20, (numSystems * systemHeight) + 20);
+      renderer.resize(staveWidth + 50, (numSystems * systemHeight) + 20);
       const context = renderer.getContext();
 
       // Ensure notes are black and visible
@@ -51,7 +51,7 @@ const Notation = ({ notes }) => {
           const staveNote = new StaveNote({ clef: "treble", keys: [key], duration: "q" });
           if (n.note.includes('#')) staveNote.addModifier(new Accidental("#"), 0);
 
-          let xOffset = ((n.time - startTimeForThisRow) * 80) + 120;
+          let xOffset = ((n.time - startTimeForThisRow) * 82) + 20;
 
           const noteTickContext = new TickContext();
           staveNote.setContext(context).setStave(stave);
@@ -74,16 +74,17 @@ const Notation = ({ notes }) => {
 };
 
 const notationWrapper = { 
-  background: 'white', // Ensure white background
+  background: 'white', 
   padding: '10px', 
   borderRadius: '8px', 
   minHeight: '150px', 
   width: '100%', 
-  maxHeight: '400px', // Forces scrolling if score is tall
-  overflowY: 'auto', // Vertical scrolling
+  maxHeight: '400px', 
+  overflowY: 'auto', 
+  overflowX: 'auto', // Allows side-to-side scrolling for the wider staff
   display: 'flex',
-  justifyContent: 'center', // Center the notation paper
-  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' // Soft shadow for depth
+  justifyContent: 'flex-start', // Keeps the clef/notes aligned to the left
+  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' 
 };
 
 export default Notation;
