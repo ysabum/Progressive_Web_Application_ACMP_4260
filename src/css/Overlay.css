@@ -47,13 +47,22 @@
   transform: translateY(60px); 
 }
 
-/* Full-width White Card (Add Audio File section) */
+/* Full-width White Card */
 .overlay .card {
   background: white;
   width: 100%;
-  padding: 50px 40px;
+  padding: 40px 40px;
   box-sizing: border-box;
   border-radius: 0;
+}
+
+/* Full-width Black Card */
+.overlay .workspace {
+  background: #000;
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 30px 40px;
 }
 
 /* Upload Button */
@@ -96,7 +105,7 @@
 }
 
 .overlay .edit-button {
-  background: #4cc9f0;
+  background: linear-gradient(135deg, #4DD29A, #72B6CE);
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
@@ -127,11 +136,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 260px;
+  width: 100%;
 }
 
 .overlay .slider {
-  width: 200px;
+  flex: 1;
 }
 
 .overlay .slider-value {
