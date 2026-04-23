@@ -1,0 +1,51 @@
+/* CSS for components/WaveformEditor.js */
+.waveform-wrapper {
+  margin-bottom: 15px;
+  position: relative;
+  z-index: 0;
+}
+
+.waveform-container {
+  position: relative;
+  border: 2px solid #72B6CE;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.waveform-container canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.trim-marker {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  z-index: 5;
+}
+
+.trim-marker.start {
+  background: red;
+}
+
+.trim-marker.end {
+  background: yellow;
+}
+
+.trim-region {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgba(76, 201, 240, 0.2);
+  z-index: 4;
+}
+
+.waveform-hint {
+  font-size: 12px;
+  color: #ccc;
+  margin-top: 5px;
+}

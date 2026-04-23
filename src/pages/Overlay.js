@@ -1,32 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import * as Tone from 'tone';
-import { Mp3Encoder } from '@breezystack/lamejs'; // MP3 encoder
-import "../css/Overlay.css"; // css
+import { Mp3Encoder } from '@breezystack/lamejs';
+import "../css/Overlay.css";
 import overlayImg from "../images/overlay.png";
+import WaveformEditor from "../components/WaveformEditor";
+import Timeline from "../components/Timeline";
 
 export default function Overlay({ onBack }) {
   const [tracks, setTracks] = useState([]);
   const [players, setPlayers] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [openPanel, setOpenPanel] = useState(null);
-  const [progress, setProgress] = useState(""); // Progress indicator
-
+  const [openPanels, setOpenPanels] = useState([]);
+  const [progress, setProgress] = useState("");
 
   /* Track Model */
   const handleUpload = (e) => {
     const selected = Array.from(e.target.files);
 
-    const newTracks = selected.map((file) => ({
-      id: crypto.randomUUID(),
-      file,
-      url: URL.createObjectURL(file),
-      volume: 0,
-      startTime: 0,
-      trimStart: 0,
-      trimEnd: "",
-    }));
+    selected.forEach((file) => {
+      const url = URL.createObjectURL(file);
 
-    setTracks((prev) => [...prev, ...newTracks]);
+      const audio = new Audio(url);
+
+      const trackId = crypto.randomUUID();
+
+      const newTrack = {
+        id: trackId,
+        file,
+        url,
+        volume: 0,
+        startTime: 0,
+        trimStart: 0,
+        trimEnd: null,
+        duration: 0, // will be updated when metadata loads
+      };
+
+      audio.addEventListener("loadedmetadata", () => {
+        setTracks((prev) =>
+          prev.map((t) =>
+            t.id === trackId
+              ? { ...t, duration: audio.duration }
+              : t
+          )
+        );
+      });
+
+      setTracks((prev) => [...prev, newTrack]);
+    });
   };
 
   const updateTrack = (id, patch) => {
@@ -39,8 +59,7 @@ export default function Overlay({ onBack }) {
     setTracks((prev) => prev.filter((t) => t.id !== id));
   };
 
-
-  /* Song Drag and Drop */
+  /* Drag + Drop */
   const onDragStart = (e, id) => {
     e.dataTransfer.setData("trackId", id);
   };
@@ -52,49 +71,47 @@ export default function Overlay({ onBack }) {
     const reordered = [...tracks];
     const draggedIndex = reordered.findIndex((t) => t.id === draggedId);
     const targetIndex = reordered.findIndex((t) => t.id === targetId);
+
     const [draggedItem] = reordered.splice(draggedIndex, 1);
     reordered.splice(targetIndex, 0, draggedItem);
 
     setTracks(reordered);
   };
 
-
   /* Playback */
-    const playAll = async () => {
-      await Tone.start();
+  const playAll = async () => {
+    await Tone.start();
 
-      // 1. Map your tracks into an array of Promises
-      const loadPromises = tracks.map((t) => {
-        return new Promise((resolve) => {
-          const player = new Tone.Player({
-            url: t.url,
-            onload: () => resolve({ player, track: t }) 
-          }).toDestination();
-          
-          player.volume.value = t.volume;
-        });
+    const loadPromises = tracks.map((t) => {
+      return new Promise((resolve) => {
+        const player = new Tone.Player({
+          url: t.url,
+          onload: () => resolve({ player, track: t })
+        }).toDestination();
+
+        player.volume.value = t.volume;
       });
+    });
 
-      // 2. Wait for all tracks to be loaded before starting
-      const loadedPlayers = await Promise.all(loadPromises);
+    const loadedPlayers = await Promise.all(loadPromises);
+    const now = Tone.now();
 
-      // 3. Start all players at once
-      loadedPlayers.forEach(({ player, track }) => {
-        const duration =
-          track.trimEnd !== "" && track.trimEnd > track.trimStart
-            ? track.trimEnd - track.trimStart
-            : undefined;
+    loadedPlayers.forEach(({ player, track }) => {
+      const duration =
+        track.trimEnd != null && track.trimEnd > track.trimStart
+          ? track.trimEnd - track.trimStart
+          : undefined;
 
-        player.start(
-          track.startTime,
-          track.trimStart,
-          duration
-        );
-      });
+      player.start(
+        now + track.startTime, 
+        track.trimStart,
+        duration
+      );
+    });
 
-      setPlayers(loadedPlayers);
-      setIsPlaying(true);
-    };
+    setPlayers(loadedPlayers);
+    setIsPlaying(true);
+  };
 
   const stopAll = () => {
     players.forEach(({ player }) => player.stop());
@@ -107,37 +124,28 @@ export default function Overlay({ onBack }) {
     };
   }, [players]);
 
-
-  /* Decode audio file using FileReader */
+  /* Decode */
   async function decodeFile(file, audioCtx) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
       reader.onload = () => {
-        const arrayBuffer = reader.result;
-        audioCtx.decodeAudioData(
-          arrayBuffer,
-          decoded => resolve(decoded),
-          err => reject("decodeAudioData failed: " + err)
-        );
+        audioCtx.decodeAudioData(reader.result, resolve, reject);
       };
 
-      reader.onerror = () => reject("FileReader failed");
+      reader.onerror = reject;
       reader.readAsArrayBuffer(file);
     });
   }
 
-
   /* Download Mix */
-  const downloadMix = async (format = "wav") => {
+  const downloadMix = async () => {
     if (tracks.length === 0) return;
 
     setProgress("Decoding audio...");
 
-    /* Create decoding context */
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    // Step 1: Decode all files SEQUENTIALLY
     const decoded = [];
     for (let i = 0; i < tracks.length; i++) {
       setProgress(`Decoding track ${i + 1}/${tracks.length}...`);
@@ -145,13 +153,13 @@ export default function Overlay({ onBack }) {
       decoded.push(buffer);
     }
 
-    audioCtx.close(); // Close decoding context to free memory
+    audioCtx.close();
 
-    // Step 2: Compute total duration
     let maxEnd = 0;
 
     tracks.forEach((t, i) => {
       const fullDur = decoded[i].duration;
+
       const effective =
         t.trimEnd !== "" && t.trimEnd > t.trimStart
           ? t.trimEnd - t.trimStart
@@ -160,23 +168,19 @@ export default function Overlay({ onBack }) {
       maxEnd = Math.max(maxEnd, t.startTime + effective);
     });
 
-    /* Prevent huge renders */
     if (maxEnd > 300) {
       alert("Mix too long. Please keep under 5 minutes.");
       return;
     }
 
-    if (maxEnd <= 0) maxEnd = 1;
-
-    // Step 3: Create OfflineAudioContext
     const sampleRate = 44100;
+
     const offline = new OfflineAudioContext(
       2,
       Math.ceil(maxEnd * sampleRate),
       sampleRate
     );
 
-    // Step 4: Schedule each track
     tracks.forEach((t, i) => {
       const src = offline.createBufferSource();
       src.buffer = decoded[i];
@@ -187,6 +191,7 @@ export default function Overlay({ onBack }) {
       src.connect(gain).connect(offline.destination);
 
       const fullDur = decoded[i].duration;
+
       const effective =
         t.trimEnd !== "" && t.trimEnd > t.trimStart
           ? t.trimEnd - t.trimStart
@@ -195,21 +200,16 @@ export default function Overlay({ onBack }) {
       src.start(t.startTime, t.trimStart, effective);
     });
 
-    /* Yield to UI before heavy rendering */
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((r) => setTimeout(r, 50));
 
     setProgress("Rendering mix...");
-
-    // Step 5: Render
     const rendered = await offline.startRendering();
 
     setProgress("Encoding...");
-
-    // Step 6: Export
     const blob = encodeMp3(rendered);
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-
     a.href = url;
     a.download = "mix.mp3";
     a.click();
@@ -217,11 +217,9 @@ export default function Overlay({ onBack }) {
     setProgress("Done!");
   };
 
-  /* MP3 Encoder */
   function encodeMp3(buffer) {
     const samples = buffer.getChannelData(0);
 
-    // Convert Float32 to Int16 (required for lamejs)
     const samples16 = new Int16Array(samples.length);
     for (let i = 0; i < samples.length; i++) {
       samples16[i] = Math.max(-1, Math.min(1, samples[i])) * 32767;
@@ -229,7 +227,6 @@ export default function Overlay({ onBack }) {
 
     const mp3encoder = new Mp3Encoder(1, buffer.sampleRate, 128);
     const blockSize = 1152;
-
     let mp3Data = [];
 
     for (let i = 0; i < samples16.length; i += blockSize) {
@@ -244,7 +241,6 @@ export default function Overlay({ onBack }) {
     return new Blob(mp3Data, { type: "audio/mp3" });
   }
 
-
   /* UI */
   return (
     <div className="overlay">
@@ -253,36 +249,36 @@ export default function Overlay({ onBack }) {
           <div className="hero-text">
             <h1 className="hero-title">Overlay</h1>
             <p className="hero-subtitle">
-              Upload multiple audio files created in Studio and play 
-              them together to create layered mixes.
+              Upload multiple audio files created in Studio 
+              and play them together to create layered mixes.
             </p>
           </div>
 
           <div className="hero-image-container">
-            <img
-              src={overlayImg}
-              alt="Overlay visual"
-              className="hero-image"
-            />
+            <img src={overlayImg} href="https://www.flaticon.com/free-icons/organized" alt="Overlay visual" className="hero-image" />
           </div>
         </div>
       </div>
 
-      <div className="card">
+      <div className="workspace">
+        {/* Upload Audio Files */}
         <label className="upload-button">
           📄 Add Audio Files
-          <input
-            type="file"
-            accept=".mp3,.m4a,.opus,.wav,.ogg"
-            multiple
-            onChange={handleUpload}
-            style={{ display: "none" }}
-          />
+          <input type="file" multiple onChange={handleUpload} hidden />
         </label>
 
-        {/* Progress Display */}
         {progress && <div className="progress">{progress}</div>}
+        
+        {/* Timeline */}
+        <Timeline
+          tracks={tracks}
+          updateTrack={updateTrack}
+        />
+      </div>
 
+
+      <div className="card">
+        {/* Track List + Items */}
         <div className="track-list">
           {tracks.map((t) => (
             <div key={t.id}>
@@ -296,35 +292,26 @@ export default function Overlay({ onBack }) {
                 <span className="remove-button" onClick={() => removeTrack(t.id)}>✖</span>
                 <span>{t.file.name}</span>
 
+                {/* Edit Button */}
                 <button
                   className="edit-button"
-                  onClick={() => setOpenPanel(openPanel === t.id ? null : t.id)}
+                  onClick={() =>
+                    setOpenPanels((prev) =>
+                      prev.includes(t.id)
+                        ? prev.filter((id) => id !== t.id) // close
+                        : [...prev, t.id] // open
+                    )
+                  }
                 >
                   Edit
                 </button>
               </div>
 
-              {openPanel === t.id && (
+              {openPanels.includes(t.id) && (
                 <div className="edit-panel">
+                  <WaveformEditor track={t} updateTrack={updateTrack} />
 
-                  <label className="edit-row">
-                    Volume (dB):
-                    <div className="slider-row">
-                      <input
-                        type="range"
-                        min="-30"
-                        max="10"
-                        step="1"
-                        value={t.volume}
-                        onChange={(e) =>
-                          updateTrack(t.id, { volume: Number(e.target.value) })
-                        }
-                        className="slider"
-                      />
-                      <span className="slider-value">{t.volume}</span>
-                    </div>
-                  </label>
-
+                  {/* Start Time */}
                   <label className="edit-row">
                     Start Time (s):
                     <div className="slider-row">
@@ -339,56 +326,39 @@ export default function Overlay({ onBack }) {
                         }
                         className="slider"
                       />
-                      <span className="slider-value">{t.startTime}</span>
-                    </div>
-                  </label>
-
-                  <label className="edit-row">
-                    Trim Start (s):
-                    <div className="slider-row">
-                      <input
-                        type="range"
-                        min="0"
-                        max="30"
-                        step="0.1"
-                        value={t.trimStart}
-                        onChange={(e) =>
-                          updateTrack(t.id, { trimStart: Number(e.target.value) })
-                        }
-                        className="slider"
-                      />
-                      <span className="slider-value">{t.trimStart}</span>
-                    </div>
-                  </label>
-
-                  <label className="edit-row">
-                    Trim End (s):
-                    <div className="slider-row">
-                      <input
-                        type="range"
-                        min="0"
-                        max="30"
-                        step="0.1"
-                        value={t.trimEnd === "" ? 0 : t.trimEnd}
-                        onChange={(e) =>
-                          updateTrack(t.id, {
-                            trimEnd: Number(e.target.value),
-                          })
-                        }
-                        className="slider"
-                      />
                       <span className="slider-value">
-                        {t.trimEnd === "" ? "full" : t.trimEnd}
+                        {t.startTime.toFixed(1)}
                       </span>
                     </div>
                   </label>
+                  
+                  {/* Volume */}
+                  <label className="edit-row">
+                    Volume (dB):
+                    <div className="slider-row">
+                      <input
+                        type="range"
+                        min="-30"
+                        max="10"
+                        value={t.volume}
+                        onChange={(e) =>
+                          updateTrack(t.id, { volume: Number(e.target.value) })
+                        }
+                        className="slider"
+                      />
 
+                      <span className="slider-value">
+                        {t.volume.toFixed(1)}
+                      </span>
+                    </div>
+                  </label>
                 </div>
               )}
             </div>
           ))}
         </div>
-
+        
+        {/* Play All Button */}
         <div className="controls">
           <button
             className="play-button"
@@ -398,6 +368,7 @@ export default function Overlay({ onBack }) {
             ▶ Play All
           </button>
 
+          {/* Stop Button */}
           <button
             className="stop-button"
             onClick={stopAll}

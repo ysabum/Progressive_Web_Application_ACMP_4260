@@ -1,0 +1,80 @@
+/* CSS for components/Timeline.css */
+.timeline {
+  margin-top: 30px;
+  padding: 20px;
+  background: #111;
+  border-radius: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* ruler */
+.timeline-ruler {
+  color: white;
+  font-size: 12px;
+  margin-bottom: 10px;
+  height: 20px;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tick {
+  position: absolute;
+  font-size: 12px;
+  color: white;
+  white-space: nowrap;
+}
+
+/* each row */
+.timeline-track {
+  position: relative;
+  height: 50px;
+  background: #222;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+/* Clip (Sound File Button) */
+.timeline-clip {
+  position: absolute;
+  top: 5px;
+  height: 40px;
+
+  background: linear-gradient(135deg, #4DD29A, #72B6CE);
+  color: #000;
+
+  border-radius: 4px;
+  user-select: none;
+  cursor: grab;
+
+  padding: 0 8px;
+  display: block;
+
+  /* vertical centering */
+  line-height: 40px;
+
+  /* text handling */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+}
+
+/* Chrome / Edge / Safari */
+.timeline::-webkit-scrollbar {
+  height: 10px;
+}
+
+.timeline::-webkit-scrollbar-track {
+  background: #111;
+  border-radius: 8px;
+}
+
+.timeline::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffffff, #232f52);
+  border-radius: 8px;
+}
+
+.timeline::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #bbbbbb, #2f3f6f);
+}
