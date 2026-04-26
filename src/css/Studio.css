@@ -1,13 +1,13 @@
-/* Studio Container */
+/* Studio Container - Fixed to 100% of the screen height */
 .studio-container {
-  padding-top: 100px;
-  padding-bottom: 50px;
-  min-height: auto;
+  height: 100vh;
+  overflow: hidden;        /* Prevent the whole page from scrolling */
+  padding: 20px;
+  padding-top: 85px;       /* Pushes content below your fixed navigation bar */
   display: flex;
   flex-direction: column;
-  align-items: center;
   background-color: #1B4D3E;
-  font-family: "Segoe UI", sans-serif;
+  box-sizing: border-box;
 }
 
 /* Header */
@@ -16,14 +16,16 @@
   justify-content: space-between;
   align-items: center;
   width: 90%;
+  margin: 0 auto;
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-  padding-bottom: 15px;
+  padding-bottom: 10px;
+  flex-shrink: 0;          /* Header stays the same size */
 }
 
 .studio-title {
   margin: 0;
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
 }
 
 /* Controls */
@@ -32,99 +34,113 @@
   gap: 10px;
 }
 
-.record-btn {
-  color: white;
+.record-btn, .save-score-btn, .edit-toggle-btn {
+  padding: 8px 16px;       /* Slightly smaller buttons to save space */
   border: none;
-  padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
-  background-color: #ff4d4d;
-}
-
-.record-btn.recording {
-  background-color: #555;
-}
-
-.save-score-btn {
   color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  background-color: #4cc9f0;
 }
 
-/* Score Area */
+.record-btn { background-color: #ff4d4d; }
+.record-btn.recording { background-color: #555; }
+.save-score-btn { background-color: #4cc9f0; }
+.edit-toggle-btn { background-color: #ffd700; color: #1a1a2e; }
+.edit-toggle-btn.active { background-color: #4ade80; }
+
+.key-box.editable {
+  border: 2px dashed #ffd700;
+  cursor: cell;
+}
+
 .score-area {
-  width: 90%;
-  background: transparent;
-  border-radius: 15px;
-  margin-top: 20px;
-  padding: 20px 0;
+  flex: 1;
+  background: #fff;        /* Brought the white background back */
+  border-radius: 8px;      /* Unified rounded corners */
+  padding: 20px;
+  width: 95%;            
+  margin: 15px auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
 .score-label {
-  font-size: 0.8rem;
-  color: #ffffff;
-  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #888;
+  text-align: center;
+  margin: 0 0 15px 0;      /* Pushes the music down away from the text */
+  font-weight: bold;
+  flex-shrink: 0;
+  border-bottom: 1px solid #eee; /* Adds a nice divider line */
+  padding-bottom: 10px;
 }
 
 /* Keyboard Area */
 .keyboard-area {
-  margin-top: 30px;
-  text-align: center;
+  flex-shrink: 0;
   width: 95%;
+  margin: 0 auto;
+  text-align: center;
+  padding-bottom: 5px;
 }
 
 .instruction-text {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
   font-weight: bold;
-  color: #FF6B6B;
+  color: white;
 }
 
-/* Keys */
+/* Keys - Smaller and tighter */
 .key-row {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 30px;
+  gap: 6px;
+  margin-bottom: 10px;    /* Reduced from 30px */
 }
 
 .key-box {
-  width: 50px;
-  height: 85px;
+  width: 45px;            /* Slightly narrower */
+  height: 65px;           /* SIGNIFICANTLY SHORTER as requested */
   border-radius: 5px;
   background-color: white;
-  border-bottom: 4px solid #ddd;
+  border-bottom: 3px solid #ddd;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .key-label {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   color: #94a3b8;
 }
 
 .note-label {
+  font-size: 0.9rem;
   font-weight: bold;
   color: #1a1a2e;
 }
 
-/* Change Instrument Button */
+/* Change Instrument Button - Moved up */
 .change-instrument-btn {
-  margin-top: 20px;
-  padding: 12px 25px;
+  margin-top: 5px;         /* Minimum margin to keep it visible */
+  padding: 8px 20px;
   cursor: pointer;
   background-color: #4cc9f0;
   border: none;
   border-radius: 5px;
   font-weight: bold;
+}
+
+.score-area svg, 
+.score-area canvas {
+  overflow: visible !important; /* Forces the browser to show ink drawn outside the box */
+  margin-top: 40px !important;  /* Pushes the staff down to make room for high ledger lines */
+  padding-bottom: 20px;         /* Keeps a little space at the bottom */
 }
