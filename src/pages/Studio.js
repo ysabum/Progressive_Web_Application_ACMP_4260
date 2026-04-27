@@ -57,7 +57,6 @@ const instrumentConfigs = {
 
 /* =========================
    STUDIO COMPONENT
-========================= */
 const Studio = ({ instrumentName, onBack }) => {
 
   /* =========================
@@ -300,6 +299,7 @@ const Studio = ({ instrumentName, onBack }) => {
           </button>
 
           <button
+            data-tutorial="record-btn"
             onClick={toggleRecording}
             className={`record-btn ${isRecording ? "recording" : ""}`}
           >
@@ -307,7 +307,7 @@ const Studio = ({ instrumentName, onBack }) => {
           </button>
 
           {!isRecording && recordedData.length > 0 && (
-            <button className="save-score-btn" onClick={saveScoreAsImage}>
+            <button data-tutorial="save-score-btn" className="save-score-btn" onClick={saveScoreAsImage}>
               💾 Save Score Image
             </button>
           )}
@@ -319,7 +319,7 @@ const Studio = ({ instrumentName, onBack }) => {
         <Notation notes={recordedData} />
       </div>
 
-      <div className="keyboard-area">
+      <div className="keyboard-area" data-tutorial="keyboard-area">
         <p className="instruction-text">
           Use the keyboard to make {instrumentName.toLowerCase()} sounds (Range: C2 - D6)
         </p>

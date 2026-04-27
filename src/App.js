@@ -3,11 +3,24 @@ import Home from "./pages/Home";
 import InstrumentSelect from "./pages/InstrumentSelect";
 import Studio from "./pages/Studio";
 import Overlay from "./pages/Overlay";
+import Tutorial from "./components/Tutorial";
 import "./css/App.css";
 
 export default function App() {
   const [view, setView] = useState("home");
   const [instrument, setInstrument] = useState(null);
+  const [tutorialActive, setTutorialActive] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [hasNotes, setHasNotes] = useState(false);
+
+  const tutorialNavigate = (targetView) => {
+    if (targetView === "studio") {
+      if (!instrument) setInstrument("Piano");
+      setView("studio");
+    } else {
+      setView(targetView);
+    }
+  };
 
   // Navigation
   const startApp = () => setView("select");
@@ -59,11 +72,19 @@ export default function App() {
 
           {/* Overlay */}
           <span
+            data-tutorial="nav-overlay"
             className={view === "overlay" ? "active" : ""}
             onClick={() => setView("overlay")}
           >
             Overlay
           </span>
+
+          <button
+            className="tutorial-launch-btn"
+            onClick={() => { setView("home"); setTutorialActive(true); }}
+          >
+            ? Tutorial
+          </button>
         </div>
       </nav>
 
@@ -73,9 +94,24 @@ export default function App() {
         <InstrumentSelect onSelect={selectInstrument} onBack={goBack} />
       )}
       {view === "studio" && (
-        <Studio instrumentName={instrument} onBack={startApp} />
+        <Studio
+          instrumentName={instrument}
+          onBack={startApp}
+          onRecordingChange={setIsRecording}
+          onNotesChange={setHasNotes}
+        />
       )}
       {view === "overlay" && <Overlay onBack={goBack} />}
+
+      {tutorialActive && (
+        <Tutorial
+          currentView={view}
+          onNavigate={tutorialNavigate}
+          onClose={() => setTutorialActive(false)}
+          isRecording={isRecording}
+          hasNotes={hasNotes}
+        />
+      )}
     </div>
   );
 }

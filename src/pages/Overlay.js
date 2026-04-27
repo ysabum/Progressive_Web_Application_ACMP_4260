@@ -262,7 +262,7 @@ export default function Overlay({ onBack }) {
 
       <div className="workspace">
         {/* Upload Audio Files */}
-        <label className="upload-button">
+        <label className="upload-button" data-tutorial="upload-btn">
           📄 Add Audio Files
           <input type="file" multiple onChange={handleUpload} hidden />
         </label>
@@ -279,7 +279,7 @@ export default function Overlay({ onBack }) {
 
       <div className="card">
         {/* Track List + Items */}
-        <div className="track-list">
+        <div className="track-list" data-tutorial="track-list">
           {tracks.map((t) => (
             <div key={t.id}>
               <div
@@ -378,7 +378,7 @@ export default function Overlay({ onBack }) {
           </button>
 
           {/* MP3 format download */}
-          <button className="download-button" onClick={() => downloadMix("mp3")}>
+          <button data-tutorial="download-btn" className="download-button" onClick={() => downloadMix("mp3")}>
             🡻 Download MP3
           </button>
         </div>

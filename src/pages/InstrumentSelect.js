@@ -13,7 +13,7 @@ export default function InstrumentSelect({ onSelect, onBack }) {
     <div className="instrument-page">
       <h2 className="instrument-title">Select Your Sound</h2>
 
-      <div className="instrument-grid">
+      <div className="instrument-grid" data-tutorial="instrument-grid">
         {instruments.map((inst) => (
           <button
             key={inst.name}

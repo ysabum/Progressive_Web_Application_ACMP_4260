@@ -1,0 +1,204 @@
+/* ── Dark frame around spotlight ── */
+.tut-mask {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.78);
+  z-index: 9900;
+  pointer-events: auto;
+  transition: all 0.25s ease;
+}
+
+/* ── Glowing border around the highlighted element ── */
+.tut-ring {
+  position: fixed;
+  z-index: 9901;
+  border-radius: 8px;
+  border: 2px solid rgba(76, 201, 240, 0.85);
+  box-shadow:
+    0 0 0 3px rgba(76, 201, 240, 0.15),
+    0 0 18px rgba(76, 201, 240, 0.25);
+  pointer-events: none;
+  transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease;
+}
+
+/* ── Connector arrow ── */
+.tut-arrow {
+  position: fixed;
+  z-index: 9902;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.tut-arrow-up {
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 9px solid #4cc9f0;
+}
+
+.tut-arrow-down {
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 9px solid #4cc9f0;
+}
+
+/* ── Tooltip card ── */
+.tut-tooltip {
+  position: fixed;
+  z-index: 9910;
+  background: #0d1117;
+  border: 1px solid #4cc9f0;
+  border-radius: 12px;
+  padding: 20px 22px 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(76, 201, 240, 0.2);
+  animation: tut-fadein 0.22s ease;
+}
+
+@keyframes tut-fadein {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.tut-centered {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: min(400px, calc(100vw - 32px)) !important;
+  animation: tut-center-in 0.22s ease;
+}
+
+@keyframes tut-center-in {
+  from { opacity: 0; transform: translate(-50%, -46%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+/* ── Progress dots ── */
+.tut-dots {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.tut-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1e2535;
+  border: 1px solid #3a4a5a;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.tut-dot.active {
+  background: #4cc9f0;
+  border-color: #4cc9f0;
+  box-shadow: 0 0 6px rgba(76, 201, 240, 0.6);
+}
+
+.tut-dot.done {
+  background: #1e4a5a;
+  border-color: #2a6070;
+}
+
+/* ── Text ── */
+.tut-title {
+  color: #4cc9f0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  letter-spacing: 0.02em;
+}
+
+.tut-body {
+  color: #9aaabb;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  margin: 0 0 16px;
+}
+
+/* ── Action buttons ── */
+.tut-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tut-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 7px 15px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.12s;
+  white-space: nowrap;
+}
+
+.tut-btn:hover {
+  opacity: 0.82;
+  transform: translateY(-1px);
+}
+
+.tut-next {
+  background: #4cc9f0;
+  color: #0d1117;
+  margin-left: auto;
+}
+
+.tut-back {
+  background: #1a2535;
+  color: #7a8899;
+  border: 1px solid #2a3848;
+}
+
+.tut-skip {
+  background: transparent;
+  color: #445566;
+  border: 1px solid #1e2d3d;
+}
+
+/* ── Waiting / gate hints ── */
+.tut-wait-hint {
+  color: #4cc9f0;
+  font-size: 0.82rem;
+  text-align: center;
+  margin: 4px 0 0;
+  animation: tut-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes tut-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+.tut-gate-hint {
+  color: #e8a838;
+  font-size: 0.78rem;
+  margin: 6px 0 0;
+  text-align: right;
+}
+
+.tut-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Navbar tutorial button ── */
+.tutorial-launch-btn {
+  background: transparent;
+  border: 1px solid #4cc9f0;
+  color: #4cc9f0;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background 0.15s, color 0.15s;
+  margin-left: 12px;
+}
+
+.tutorial-launch-btn:hover {
+  background: rgba(76, 201, 240, 0.12);
+}
