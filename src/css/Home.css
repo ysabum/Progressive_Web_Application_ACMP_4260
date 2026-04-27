@@ -1,22 +1,24 @@
-/* CSS for pages/Overlay.js */
+/* ================================
+   Glowworm Home Page (Updated)
+   ================================ */
 
 /* Full-page layout */
 .home {
-  height: 100vh;
+  min-height: 200vh; /* allows scrolling */
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(to bottom, #1a1a2e 0%, #205566 100%);
   color: white;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  padding-bottom: 80px;
 }
 
 /* Centered hero content */
 .home .hero-content {
   text-align: center;
   max-width: 600px;
-  padding: 20px;
+  padding: 120px 20px 40px 20px;
 }
 
 /* Title */
@@ -58,10 +60,246 @@
   transform: translateY(-2px);
 }
 
-/* Footer */
-.home .footer {
+/* ============================================
+   Instrument Emoji Background Layer
+   ============================================ */
+
+.instrument-bg {
   position: absolute;
-  bottom: 20px;
-  font-size: 0.8rem;
-  color: #94a3b8;
+  top: 425px; /* adjust to move higher/lower */
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 7rem; /* size of emojis */
+  opacity: 1; /* transparency */
+  z-index: 1; /* behind module bar, above background */
+  pointer-events: none;
 }
+
+.instrument-bg span {
+  margin: 0 -30px; /* spacing between emojis */
+}
+
+.instrument-bg2 {
+  position: absolute;
+  top: 490px; /* adjust to move higher/lower */
+  left: 150px;
+  width: 100%;
+  text-align: center;
+  font-size: 4rem; /* size of emojis */
+  opacity: 1; /* transparency */
+  z-index: 1; /* behind module bar, above background */
+  pointer-events: none;
+}
+
+.instrument-bg2 span {
+  margin: 0 -10px; /* spacing between emojis */
+}
+
+.instrument-bg3 {
+  position: absolute;
+  top: 490px; /* adjust to move higher/lower */
+  left: -150px;
+  width: 100%;
+  text-align: center;
+  font-size: 4rem; /* size of emojis */
+  opacity: 1; /* transparency */
+  z-index: 1; /* behind module bar, above background */
+  pointer-events: none;
+}
+
+.instrument-bg3 span {
+  margin: 0 -10px; /* spacing between emojis */
+}
+
+/* ================================
+   Module Bar
+   ================================ */
+
+.module-bar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.module-btn {
+  background: transparent;
+  border: none;
+  padding: 0px 20px;
+  font-size: 1rem;
+  color: #cbd5e0;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.module-btn:hover {
+  color: #59D48C;
+}
+
+.module-btn.active {
+  color: #4cc9f0;
+  border-bottom: 3px solid #4cc9f0;
+}
+
+/* Black semi-transparent frosted container for module bar */
+.module-bar-wrapper {
+  background: rgba(0, 0, 0, 0.35); /* semi-transparent black */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0px 40px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+  width: 80%;
+  max-width: 900px;
+  margin: 60px auto 10px auto; /* centers it and moves it down */
+  display: flex;
+  justify-content: center;
+  z-index: 3;
+}
+
+/* ================================
+   Flavor Text
+   ================================ */
+
+/* Transparent flavor text container */
+.flavor-text {
+  font-size: 1.1rem;
+  color: #e2e8f0;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ================================
+   Screenshot Preview
+   ================================ */
+
+.preview-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+  z-index: 3;
+}
+
+.preview-image {
+  width: 90%;
+  max-width: 900px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  transition: opacity 0.25s ease;
+}
+
+/* White semi-transparent rounded container */
+.preview-card {
+  background: rgba(255, 255, 255, 0.15); /* semi-transparent white */
+  backdrop-filter: blur(8px);            /* frosted glass effect */
+  -webkit-backdrop-filter: blur(8px);    /* Safari support */
+  padding: 30px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* ================================
+   Footer
+   ================================ */
+
+.home .footer {
+  margin-top: 60px;
+  font-size: 0.8rem;
+  color: #b0c4df;
+  text-align: center;
+  z-index: 3;
+}
+
+
+/* ================================
+   Floating Dots Animation
+   ================================ */
+
+.floating-dots {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* don't block clicks */
+  overflow: hidden;
+  z-index: 1; /* behind everything */
+}
+
+.floating-dots .dot {
+  position: absolute;
+  bottom: -20px;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  animation: floatUp linear infinite;
+  filter: blur(1px);
+}
+
+/* Randomize each dot */
+.floating-dots .dot:nth-child(odd) {
+  width: 6px;
+  height: 6px;
+  animation-duration: 6s;
+  background: rgba(191, 255, 223, 0.25);
+}
+
+.floating-dots .dot:nth-child(even) {
+  width: 3px;
+  height: 3px;
+  animation-duration: 9s;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* Position dots randomly across the screen */
+.floating-dots .dot:nth-child(1) { left: 5%; animation-delay: 0s; }
+.floating-dots .dot:nth-child(2) { left: 15%; animation-delay: 1s; }
+.floating-dots .dot:nth-child(3) { left: 25%; animation-delay: 2s; }
+.floating-dots .dot:nth-child(4) { left: 35%; animation-delay: 0.5s; }
+.floating-dots .dot:nth-child(5) { left: 45%; animation-delay: 1.5s; }
+.floating-dots .dot:nth-child(6) { left: 55%; animation-delay: 0.2s; }
+.floating-dots .dot:nth-child(7) { left: 65%; animation-delay: 2.5s; }
+.floating-dots .dot:nth-child(8) { left: 75%; animation-delay: 1.2s; }
+.floating-dots .dot:nth-child(9) { left: 85%; animation-delay: 0.8s; }
+.floating-dots .dot:nth-child(10) { left: 95%; animation-delay: 2.2s; }
+
+/* Repeat pattern for remaining dots */
+.floating-dots .dot:nth-child(11) { left: 12%; animation-delay: 0.3s; }
+.floating-dots .dot:nth-child(12) { left: 28%; animation-delay: 1.8s; }
+.floating-dots .dot:nth-child(13) { left: 42%; animation-delay: 0.7s; }
+.floating-dots .dot:nth-child(14) { left: 58%; animation-delay: 2.1s; }
+.floating-dots .dot:nth-child(15) { left: 72%; animation-delay: 1.1s; }
+.floating-dots .dot:nth-child(16) { left: 88%; animation-delay: 0.4s; }
+.floating-dots .dot:nth-child(17) { left: 33%; animation-delay: 2.7s; }
+.floating-dots .dot:nth-child(18) { left: 67%; animation-delay: 1.9s; }
+.floating-dots .dot:nth-child(19) { left: 49%; animation-delay: 0.6s; }
+.floating-dots .dot:nth-child(20) { left: 81%; animation-delay: 2.4s; }
+
+/* Animation */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-120vh) scale(1.4);
+    opacity: 0;
+  }
+}
+
