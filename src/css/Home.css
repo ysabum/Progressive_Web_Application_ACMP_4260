@@ -1,8 +1,10 @@
-/* ================================
-   Glowworm Home Page (Updated)
-   ================================ */
+/* CSS for Home.js */
 
+/* ================================
+   Glowworm Home Page 
+   ================================ */
 /* Full-page layout */
+
 .home {
   min-height: 200vh; /* allows scrolling */
   display: flex;
@@ -90,6 +92,8 @@
   opacity: 1; /* transparency */
   z-index: 1; /* behind module bar, above background */
   pointer-events: none;
+  max-width: 100%;     /* prevents overflow */
+  overflow: hidden;    /* hides any spillover */
 }
 
 .instrument-bg2 span {
@@ -106,6 +110,8 @@
   opacity: 1; /* transparency */
   z-index: 1; /* behind module bar, above background */
   pointer-events: none;
+  max-width: 100%;     /* prevents overflow */
+  overflow: hidden;    /* hides any spillover */
 }
 
 .instrument-bg3 span {
