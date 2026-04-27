@@ -1,76 +1,193 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'; // Added useCallback
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
 import Notation from '../components/Notation';
-import { Renderer, Stave, StaveNote, Accidental, TickContext } from 'vexflow';
+import { Renderer, Stave, StaveNote, Accidental } from 'vexflow';
 import "../css/Studio.css";
 
+/* =========================
+   KEYBOARD → NOTE MAP
+========================= */
 const visualMap = {
-  'q': 'C2', 'w': 'D2', 'e': 'E2', 'r': 'F2', 't': 'G2',
-  'a': 'A2', 's': 'B2', 'd': 'C3', 'f': 'D3', 'g': 'E3',
-  'z': 'F3', 'x': 'G3', 'c': 'A3', 'v': 'B3', 'b': 'C4',
-  'y': 'D4', 'u': 'E4', 'i': 'F4', 'o': 'G4', 'p': 'A4',
-  'h': 'B4', 'j': 'C5', 'k': 'D5', 'l': 'E5', ';': 'F5',
-  'n': 'G5', 'm': 'A5', ',': 'B5', '.': 'C6', '/': 'D6'
+  q: 'C2', w: 'D2', e: 'E2', r: 'F2', t: 'G2',
+  a: 'A2', s: 'B2', d: 'C3', f: 'D3', g: 'E3',
+  z: 'F3', x: 'G3', c: 'A3', v: 'B3', b: 'C4',
+  y: 'D4', u: 'E4', i: 'F4', o: 'G4', p: 'A4',
+  h: 'B4', j: 'C5', k: 'D5', l: 'E5', ';': 'F5',
+  n: 'G5', m: 'A5', ',': 'B5', '.': 'C6', '/': 'D6'
 };
 
-// 1. INSTRUMENT CONFIGS OUTSIDE: Stays outside to remain static
+/* =========================
+   INSTRUMENT CONFIGS
+========================= */
 const instrumentConfigs = {
   Piano: {
     offset: 12,
     baseUrl: "./sounds/piano/",
-    urls: { "C2": "C2.mp3", "C3": "C3.mp3", "C4": "C4.mp3", "C5": "C5.mp3",
-            "D#2": "Ds2.mp3", "D#3": "Ds3.mp3", "D#4": "Ds4.mp3", "D#5": "Ds5.mp3" }
+    urls: {
+      C2: "C2.mp3", C3: "C3.mp3", C4: "C4.mp3", C5: "C5.mp3",
+      "D#2": "Ds2.mp3", "D#3": "Ds3.mp3", "D#4": "Ds4.mp3", "D#5": "Ds5.mp3"
+    }
   },
   Guitar: {
     offset: 0,
     baseUrl: "./sounds/guitar/",
-    urls: { "A2": "As2.mp3", "B2": "B2.mp3", "G2": "G2.mp3", "F#2": "Fs2.mp3",
-            "A3": "A3.mp3", "D3": "D3.mp3", "F3": "F3.mp3", "G3": "G3.mp3",
-            "C4": "C4.mp3", "E4": "E4.mp3" }
+    urls: {
+      A2: "As2.mp3", B2: "B2.mp3", G2: "G2.mp3", "F#2": "Fs2.mp3",
+      A3: "A3.mp3", D3: "D3.mp3", F3: "F3.mp3", G3: "G3.mp3",
+      C4: "C4.mp3", E4: "E4.mp3"
+    }
   },
   Violin: {
-    offset: 12, 
+    offset: 12,
     baseUrl: "./sounds/violin/",
-    urls: { "G3": "G3.mp3", "A3": "A3.mp3", "C4": "C4.mp3", "A4": "A4.mp3",
-            "C5": "C5.mp3", "E5": "E5.mp3", "G5": "G5.mp3", "C6": "C6.mp3" }
+    urls: {
+      G3: "G3.mp3", A3: "A3.mp3", C4: "C4.mp3", A4: "A4.mp3",
+      C5: "C5.mp3", E5: "E5.mp3", G5: "G5.mp3", C6: "C6.mp3"
+    }
   },
   Trumpet: {
-    offset: 12, 
+    offset: 12,
     baseUrl: "./sounds/trumpet/",
-    urls: { "A3": "A3.mp3", "C4": "C4.mp3", "A#4": "As4.mp3", "D#4": "Ds4.mp3",
-            "F3": "F3.mp3", "F5": "F5.mp3", "G4": "G4.mp3", "D5": "D5.mp3" }
+    urls: {
+      A3: "A3.mp3", C4: "C4.mp3", "A#4": "As4.mp3", "D#4": "Ds4.mp3",
+      F3: "F3.mp3", F5: "F5.mp3", G4: "G4.mp3", D5: "D5.mp3"
+    }
   }
 };
 
-const Studio = ({ instrumentName, onBack, onRecordingChange, onNotesChange }) => {
+/* =========================
+   STUDIO COMPONENT
+const Studio = ({ instrumentName, onBack }) => {
+
+  /* =========================
+     STATE MANAGEMENT
+  ========================= */
   const [isRecording, setIsRecording] = useState(false);
   const [recordedData, setRecordedData] = useState([]);
-  const [keyMap, setKeyMap] = useState(visualMap);
+  const [keyMap, setKeyMap] = useState(() => {
+    const saved = localStorage.getItem("studio_keymap");
+    return saved ? JSON.parse(saved) : visualMap;
+  });
   const [isEditMode, setIsEditMode] = useState(false);
 
+  /* =========================
+     AUDIO / RECORDING REFS
+  ========================= */
   const samplerRef = useRef(null);
-  const activeNotesRef = useRef({});
-  const scoreAreaRef = useRef(null);
-  const bottomRef = useRef(null);
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
   const startTime = useRef(null);
   const destRef = useRef(null);
-  const isRecordingRef = useRef(isRecording);
 
+  /* =========================
+     PERFORMANCE REFS
+  ========================= */
+  const isRecordingRef = useRef(false);
   const keyMapRef = useRef(keyMap);
+  const activeNotesRef = useRef({});
+  const configRef = useRef(null);
+
+  /* =========================
+     KEYMAP SYNC + PERSISTENCE
+  ========================= */
   useEffect(() => {
     keyMapRef.current = keyMap;
+    localStorage.setItem("studio_keymap", JSON.stringify(keyMap));
   }, [keyMap]);
 
+  /* =========================
+     RECORDING STATE SYNC
+  ========================= */
   useEffect(() => {
     isRecordingRef.current = isRecording;
   }, [isRecording]);
 
-  useEffect(() => { onRecordingChange?.(isRecording); }, [isRecording, onRecordingChange]);
-  useEffect(() => { onNotesChange?.(recordedData.length > 0); }, [recordedData, onNotesChange]);
+  /* =========================
+     NOTE TRANSPOSITION HELPER
+  ========================= */
+  const getFinalNote = (baseNote, config) =>
+    Tone.Frequency(baseNote)
+      .transpose(config.offset || 0)
+      .toNote();
 
-  // 2. DEFINE toggleRecording FIRST: Use useCallback for stability
+  /* =========================
+     AUDIO ENGINE + KEYBOARD INPUT
+  ========================= */
+  useEffect(() => {
+    destRef.current = Tone.getContext().createMediaStreamDestination();
+    configRef.current = instrumentConfigs[instrumentName] || instrumentConfigs.Piano;
+
+    const sampler = new Tone.Sampler({
+      urls: configRef.current.urls,
+      baseUrl: configRef.current.baseUrl,
+      release: 1,
+      onload: () => console.log(`${instrumentName} loaded`)
+    }).toDestination();
+
+    sampler.connect(destRef.current);
+    samplerRef.current = sampler;
+
+    /* =========================
+       KEY DOWN HANDLER
+    ========================= */
+    const handleKeyDown = async (e) => {
+      if (e.repeat || isEditMode) return;
+
+      const key = e.key.toLowerCase();
+      const baseNote = keyMapRef.current[key];
+      if (!baseNote) return;
+
+      if (Tone.getContext().state !== "running") await Tone.start();
+
+      const finalNote = getFinalNote(baseNote, configRef.current);
+      sampler.triggerAttack(finalNote);
+
+      if (isRecordingRef.current) {
+        const t = Tone.now() - startTime.current;
+        activeNotesRef.current[key] = { note: finalNote, startTime: t };
+      }
+    };
+
+    /* =========================
+       KEY UP HANDLER
+    ========================= */
+    const handleKeyUp = (e) => {
+      if (isEditMode) return;
+
+      const key = e.key.toLowerCase();
+      const baseNote = keyMapRef.current[key];
+      if (!baseNote) return;
+
+      const finalNote = getFinalNote(baseNote, configRef.current);
+      sampler.triggerRelease(finalNote);
+
+      if (isRecordingRef.current && activeNotesRef.current[key]) {
+        const { startTime: noteStart } = activeNotesRef.current[key];
+
+        const duration = Tone.now() - startTime.current - noteStart;
+
+        setRecordedData(prev => [
+          ...prev,
+          { note: finalNote, time: noteStart, duration }
+        ]);
+
+        delete activeNotesRef.current[key];
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      sampler.dispose();
+    };
+  }, [instrumentName, isEditMode]);
+
+  /* =========================
+     RECORDING TOGGLE
+  ========================= */
   const toggleRecording = useCallback(() => {
     if (!isRecording) {
       setRecordedData([]);
@@ -78,7 +195,9 @@ const Studio = ({ instrumentName, onBack, onRecordingChange, onNotesChange }) =>
       startTime.current = Tone.now();
 
       mediaRecorder.current = new MediaRecorder(destRef.current.stream);
-      mediaRecorder.current.ondataavailable = (e) => audioChunks.current.push(e.data);
+      mediaRecorder.current.ondataavailable = (e) =>
+        audioChunks.current.push(e.data);
+
       mediaRecorder.current.onstop = () => {
         const blob = new Blob(audioChunks.current, { type: "audio/wav" });
         const url = URL.createObjectURL(blob);
@@ -96,191 +215,89 @@ const Studio = ({ instrumentName, onBack, onRecordingChange, onNotesChange }) =>
     }
   }, [isRecording, instrumentName]);
 
-  // 3. useEffect SECOND: Now it can safely "see" toggleRecording
-  useEffect(() => {
-    destRef.current = Tone.getContext().createMediaStreamDestination();
-    const config = instrumentConfigs[instrumentName] || instrumentConfigs.Piano;
-
-    const reverb = new Tone.Reverb(1.5).toDestination(); 
-
-    const sampler = new Tone.Sampler({
-      urls: config.urls,
-      baseUrl: config.baseUrl,
-      release: 1,
-      onload: () => console.log(`${instrumentName} loaded!`)
-    }).toDestination();
-
-    sampler.connect(reverb); 
-    sampler.connect(destRef.current);
-    reverb.connect(destRef.current);
-    samplerRef.current = sampler;
-
-    const handleGlobalShortcuts = (e) => {
-      if (isEditMode) return;
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault(); 
-        toggleRecording();
-      }
-    };
-
-    const handleKeyDown = async (e) => {
-      if (e.repeat || isEditMode) return; 
-      const keyName = e.key.toLowerCase();
-      const baseNote = keyMapRef.current[keyName];
-
-      if (baseNote && samplerRef.current?.loaded) {
-        if (Tone.getContext().state !== "running") await Tone.start();
-        const finalNote = Tone.Frequency(baseNote).transpose(config.offset).toNote();
-        samplerRef.current.triggerAttack(finalNote);
-
-        if (isRecordingRef.current) {
-          activeNotesRef.current[keyName] = {
-            note: finalNote,
-            startTime: Tone.now() - startTime.current
-          };
-        }
-      }
-    };
-
-    const handleKeyUp = (e) => {
-      if (isEditMode) return; 
-      const keyName = e.key.toLowerCase();
-      const baseNote = keyMapRef.current[keyName];
-
-      if (baseNote && samplerRef.current?.loaded) {
-        const finalNote = Tone.Frequency(baseNote).transpose(config.offset).toNote();
-        samplerRef.current?.triggerRelease(finalNote);
-
-        if (isRecordingRef.current && activeNotesRef.current[keyName]) {
-          const { note, startTime: noteStartTime } = activeNotesRef.current[keyName];
-          const duration = (Tone.now() - startTime.current) - noteStartTime;
-          setRecordedData(prev => [...prev, { note, time: noteStartTime, duration }]);
-          delete activeNotesRef.current[keyName];
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("keydown", handleGlobalShortcuts);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-      window.removeEventListener("keydown", handleGlobalShortcuts);
-      sampler.dispose();
-      reverb.dispose();
-    };
-  }, [instrumentName, isEditMode, toggleRecording]); // Simplified dependencies
-
-  // NEW: The "Target Every Box" Scroll Fix
-  useEffect(() => {
-    // We use a small delay to let VexFlow finish drawing the new notes
-    const timer = setTimeout(() => {
-      if (scoreAreaRef.current) {
-        // 1. Scroll the main container
-        scoreAreaRef.current.scrollTop = scoreAreaRef.current.scrollHeight;
-        
-        // 2. Find ANY inner containers built by the Notation component and scroll them too
-        const innerDivs = scoreAreaRef.current.querySelectorAll('div');
-        innerDivs.forEach(div => {
-          div.scrollTop = div.scrollHeight;
-        });
-      }
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, [recordedData]); // This triggers every time a new note is played
-
+  /* =========================
+     SCORE EXPORT (VEXFLOW → PNG)
+  ========================= */
   const saveScoreAsImage = () => {
-    if (recordedData.length === 0) {
-      alert("No notes recorded to save!");
-      return;
-    }
+    if (!recordedData.length) return alert("No notes recorded!");
 
     const secondsPerLine = 12;
-    const numSystems = Math.ceil(recordedData[recordedData.length - 1].time / secondsPerLine);
-    const canvasWidth = 1200;
-    const systemHeight = 150;
-    const canvasHeight = numSystems * systemHeight + 100;
+    const numSystems = Math.ceil(recordedData.at(-1).time / secondsPerLine);
 
     const canvas = document.createElement("canvas");
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-    const canvasContext = canvas.getContext("2d");
+    canvas.width = 1200;
+    canvas.height = numSystems * 150 + 100;
 
-    canvasContext.fillStyle = "white";
-    canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const renderer = new Renderer(canvas, Renderer.Backends.CANVAS);
-    const vfContext = renderer.getContext();
-
-    vfContext.setFillStyle("black");
-    vfContext.setStrokeStyle("black");
+    const vf = renderer.getContext();
 
     for (let i = 0; i < numSystems; i++) {
-      const staveY = 50 + i * systemHeight;
-      const stave = new Stave(50, staveY, canvasWidth - 100);
+      const stave = new Stave(50, 50 + i * 150, 1100);
+      stave.addClef("treble");
+      if (i === 0) stave.addTimeSignature("4/4");
+      stave.setContext(vf).draw();
 
-      if (i === 0) stave.addClef("treble").addTimeSignature("4/4");
-      else stave.addClef("treble");
+      const start = i * secondsPerLine;
 
-      stave.setContext(vfContext).draw();
+      recordedData
+        .filter(n => n.time >= start && n.time < start + secondsPerLine)
+        .forEach(n => {
+          const keys = n.note.slice(0, -1).toLowerCase() + "/" + n.note.slice(-1);
 
-      const startTimeForThisRow = i * secondsPerLine;
-      const rowNotes = recordedData.filter(
-        (n) => n.time >= startTimeForThisRow && n.time < (i + 1) * secondsPerLine
-      );
+          let d = "q";
+          if (n.duration > 1.5) d = "w";
+          else if (n.duration > 0.75) d = "h";
+          else if (n.duration < 0.2) d = "8";
 
-      rowNotes.forEach((n) => {
-        const key = n.note.slice(0, -1).toLowerCase() + "/" + n.note.slice(-1);
-        
-        let durationChar = "q"; 
-        if (n.duration > 1.5) durationChar = "w";      
-        else if (n.duration > 0.75) durationChar = "h"; 
-        else if (n.duration < 0.2) durationChar = "8";  
+          const note = new StaveNote({ clef: "treble", keys: [keys], duration: d });
 
-        const staveNote = new StaveNote({ 
-          clef: "treble", 
-          keys: [key], 
-          duration: durationChar 
+          if (n.note.includes("#")) note.addModifier(new Accidental("#"), 0);
+
+          note.setContext(vf).setStave(stave).draw();
         });
-        if (n.note.includes("#")) staveNote.addModifier(new Accidental("#"), 0);
-
-        let xOffset = (n.time - startTimeForThisRow) * 82 + 20;
-
-        const tick = new TickContext();
-        staveNote.setContext(vfContext).setStave(stave);
-        tick.addTickable(staveNote).preFormat().setX(xOffset);
-
-        staveNote.draw();
-      });
     }
 
-    const pngUrl = canvas.toDataURL("image/png");
-    const downloadLink = document.createElement("a");
-    downloadLink.href = pngUrl;
-    downloadLink.download = "glowworm-full-score.png";
-    downloadLink.click();
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = "score.png";
+    link.click();
   };
 
-  const currentConfig = instrumentConfigs[instrumentName] || instrumentConfigs.Piano;
-  const startRange = Tone.Frequency("C2").transpose(currentConfig.offset).toNote();
-  const endRange = Tone.Frequency("D6").transpose(currentConfig.offset).toNote();
+  /* =========================
+     AUTO SCROLL SCORE VIEW
+  ========================= */
+  useEffect(() => {
+    const score = document.querySelector(".score-area");
+    if (!score) return;
 
+    const id = requestAnimationFrame(() => {
+      score.scrollTo({ top: score.scrollHeight, behavior: "smooth" });
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, [recordedData]);
+
+  /* =========================
+     RENDER
+  ========================= */
   return (
     <div className="studio-container">
+
       <header className="studio-header">
         <h2 className="studio-title">{instrumentName} Studio</h2>
 
-        <div className="studio-controls" data-tutorial="studio-controls">
+        <div className="studio-controls">
           <button
-            data-tutorial="edit-keys-btn"
             className={`edit-toggle-btn ${isEditMode ? "active" : ""}`}
-            onClick={() => setIsEditMode(!isEditMode)}
+            onClick={() => setIsEditMode(v => !v)}
           >
             {isEditMode ? "✅ Save Keys" : "⌨️ Edit Keys"}
           </button>
+
           <button
             data-tutorial="record-btn"
             onClick={toggleRecording}
@@ -297,27 +314,31 @@ const Studio = ({ instrumentName, onBack, onRecordingChange, onNotesChange }) =>
         </div>
       </header>
 
-      {/* RESTRUCTURED SCORE AREA */}
-      <div className="score-area" ref={scoreAreaRef} data-tutorial="score-area">
-        {/* Label is now at the TOP */}
+      <div className="score-area">
         <p className="score-label">Real-time VexFlow Notation</p>
         <Notation notes={recordedData} />
       </div>
 
       <div className="keyboard-area" data-tutorial="keyboard-area">
         <p className="instruction-text">
-          Use the keyboard to make {instrumentName.toLowerCase()} sounds (Range: {startRange} - {endRange})
+          Use the keyboard to make {instrumentName.toLowerCase()} sounds (Range: C2 - D6)
         </p>
 
         <div className="key-row">
           {Object.keys(keyMap).map((key) => (
-            <div 
-              key={key} 
+            <div
+              key={key}
               className={`key-box ${isEditMode ? "editable" : ""}`}
               onClick={() => {
-                if (isEditMode) {
-                  const newNote = prompt(`Enter new note for key ${key.toUpperCase()} (e.g. C4):`, keyMap[key]);
-                  if (newNote) setKeyMap(prev => ({ ...prev, [key]: newNote }));
+                if (!isEditMode) return;
+
+                const newNote = prompt(
+                  `Enter new note for ${key.toUpperCase()}`,
+                  keyMap[key]
+                );
+
+                if (newNote) {
+                  setKeyMap(prev => ({ ...prev, [key]: newNote }));
                 }
               }}
             >
