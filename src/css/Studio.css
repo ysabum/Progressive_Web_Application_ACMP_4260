@@ -1,13 +1,14 @@
 /* Studio Container - Fixed to 100% of the screen height */
 .studio-container {
   height: 100vh;
-  overflow: hidden;        /* Prevent the whole page from scrolling */
   padding: 20px;
-  padding-top: 85px;       /* Pushes content below your fixed navigation bar */
+  padding-top: 85px;
   display: flex;
   flex-direction: column;
   background-color: #1B4D3E;
   box-sizing: border-box;
+
+  overflow: hidden; 
 }
 
 /* Header */
@@ -55,17 +56,43 @@
 }
 
 .score-area {
-  flex: 1;
-  background: #fff;        /* Brought the white background back */
-  border-radius: 8px;      /* Unified rounded corners */
+  flex: 1 1 auto;
+  min-height: 0;           
+  background: #fff;
+  border-radius: 8px;
   padding: 20px;
-  width: 95%;            
+  width: 95%;
   margin: 15px auto;
-  overflow-y: auto;
-  overflow-x: hidden;
+
   display: flex;
   flex-direction: column;
+
+  overflow: hidden;          
 }
+
+/* Hide scroll bars */
+.score-area::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.score-area div {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.score-area > div {
+  width: 100%;
+}
+
+.score-area div::-webkit-scrollbar {
+  display: none;
+}
+
+.score-area canvas {
+  display: block;
+  min-height: 100%;
+}
+
 
 .score-label {
   font-size: 0.9rem;
@@ -138,9 +165,8 @@
   font-weight: bold;
 }
 
-.score-area svg, 
-.score-area canvas {
-  overflow: visible !important; /* Forces the browser to show ink drawn outside the box */
-  margin-top: 40px !important;  /* Pushes the staff down to make room for high ledger lines */
-  padding-bottom: 20px;         /* Keeps a little space at the bottom */
+.notation-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
