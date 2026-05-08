@@ -1,5 +1,7 @@
 # 🐛 Glowworm Music Studio  
-An interactive web-based Digital Audio Workstation (DAW)
+An interactive web-based Digital Audio Workstation (DAW)  
+  
+**Live Link:** https://ysabum.github.io/archive/UX_Design/glowworm_music_studio/
 
 ## 🌟 Project Overview  
 Glowworm Music Studio is a progressive web application (PWA) designed to bring high-quality music creation to the browser. It transforms keyboard input into playable digital instruments, score‑writing, and multi‑track “band” or song performances for musicians and/or creators who want an intuitive and customizable way to compose and perform music that can be shared with others.
